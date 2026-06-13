@@ -37,8 +37,8 @@ namespace EnterpriseAssetManagement.API.Controllers
                 MaintenanceDate = log.MaintenanceDate,
                 Cost = log.Cost,
                 AssetId = log.AssetId,
-                AssetName = log.Asset?.Name ?? "جهاز ممسوح",
-                EngineerName = log.User?.FullName ?? "مهندس غير معروف"
+                AssetName = log.Asset?.Name ?? "Deleted device",
+                EngineerName = log.User?.FullName ?? "Unknown engineer"
             }).ToList();
 
             return Ok(logDtos);
@@ -54,7 +54,7 @@ namespace EnterpriseAssetManagement.API.Controllers
 
             if (log == null)
             {
-                return NotFound(new { message = $"فاتورة الصيانة رقم {id} مش موجودة في السيستم" });
+                return NotFound(new { message = $"Maintenance invoice number {id} not found in the system"});
             }
             var dto = new GetMaintenanceLogDto()
             {
@@ -62,8 +62,8 @@ namespace EnterpriseAssetManagement.API.Controllers
                 Description =log.Description,
                 Cost =log.Cost,
                 AssetId =log.AssetId,
-                AssetName =log.Asset?.Name?? "جهاز ممسوح",
-                EngineerName =log.User?.FullName ?? "مهندس غير معروف",
+                AssetName =log.Asset?.Name?? "Deleted device",
+                EngineerName =log.User?.FullName ?? "Unknown engineer",
                 MaintenanceDate=log.MaintenanceDate
             };
             return Ok(dto);
@@ -78,10 +78,10 @@ namespace EnterpriseAssetManagement.API.Controllers
             var asset = await context.Assets.FindAsync(Dtolog.AssetId);
             if (asset == null)
             {
-                return NotFound($"عفواً، لا يوجد جهاز مسجل في السيستم بالرقم ({Dtolog.AssetId})");
+                return NotFound($"Sorry, there is no device registered in the system with the number ({Dtolog.AssetId})");
             }
             var UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (UserId == null) return Unauthorized("اليوزر غير معروف");
+            if (UserId == null) return Unauthorized("Unknown user");
             var log = new MaintenanceLog()
             {
                 Description = Dtolog.Description,
@@ -95,22 +95,23 @@ namespace EnterpriseAssetManagement.API.Controllers
 
             return Ok(new
             {
-                message = "تم تسجيل عملية الصيانة بنجاح في قاعدة البيانات",
+                message = "Maintenance operation was successfully recorded in the database",
                 maintenanceLogId = log.Id 
             });
 
         }
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var log = await _maintenanceLog.GetByIdAsync(id);
             if (log == null)
             {
-                return NotFound(new { message = $"فاتورة الصيانة رقم {id} مش موجودة في السيستم" });
+                return NotFound(new { message = $"Maintenance invoice number {id} not found in the system" });
             }
             _maintenanceLog.Delete(log);
             await _maintenanceLog.SaveChangesAsync();
-            return Ok(new { Massage = "تم حذف سجل الصيانة بنجاح من السيستم" });
+            return Ok(new { message = "Maintenance log deleted successfully from the system" });
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> Edit(int id, UpdateMaintenanceLogDto logDtofromRequist, [FromServices] AppDbContext context)
@@ -119,12 +120,12 @@ namespace EnterpriseAssetManagement.API.Controllers
 
             var logDB = await _maintenanceLog.GetByIdAsync(id);
             if (logDB == null)
-                return NotFound(new { Massage = $"فاتورة الصيانة رقم {id} مش موجودة في السيستم" });
+                return NotFound(new { message = $"Maintenance invoice number {id} not found in the system"});
 
             var asset =await context.Assets.FindAsync(logDtofromRequist.AssetId);
             if (asset == null)
             {
-                return NotFound($"عفواً، لا يوجد جهاز مسجل في السيستم بالرقم ({logDtofromRequist.AssetId}) عشان نربط الصيانة بيه!");
+                return NotFound($"Sorry, there is no device registered in the system with the number ({logDtofromRequist.AssetId}) to link the maintenance to!");
             }
             logDB.Description = logDtofromRequist.Description;
             logDB.Cost = logDtofromRequist.Cost;
@@ -132,7 +133,7 @@ namespace EnterpriseAssetManagement.API.Controllers
             logDB.MaintenanceDate = DateTime.Now;
             _maintenanceLog.Update(logDB);
             await _maintenanceLog.SaveChangesAsync();
-            return Ok(new { Massage = "\"تم تحديث بيانات السجل بنجاح في قاعدة البيانات\"" });
+            return Ok(new { message = "Log data updated successfully in the database" });
             
         }
     }

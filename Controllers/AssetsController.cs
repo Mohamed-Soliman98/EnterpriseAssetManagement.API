@@ -2,7 +2,6 @@
 using EnterpriseAssetManagement.API.Entities;
 using EnterpriseAssetManagement.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EnterpriseAssetManagement.API.Controllers
@@ -20,25 +19,38 @@ namespace EnterpriseAssetManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,IT_Manager")]
         public async Task<IActionResult> GetAll()
         {
             var assets = await _assetRepo.GetAllAsync();
             return Ok(assets);
         }
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,IT_Manager")]
         public async Task<IActionResult> GetById(int id)
         {
             var asset = await _assetRepo.GetByIdAsync(id);
-            if (asset == null) return NotFound(new { message = $"الجهاز رقم {id} مش موجود في السيستم" });
+            if (asset == null) return NotFound(new { message =$"Device number {id} not found in the system"});
 
             return Ok(asset);
         }
         [HttpPost]
         [Authorize(Roles = "Admin,IT_Manager")]
-        public async Task<IActionResult> Create(Asset asset)
+        public async Task<IActionResult> Create(CreateAssetDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            var asset = new Asset
+            {
+                Name = dto.Name,
+                AssetType = dto.AssetType,
+                Model = dto.Model,
+                SerialNumber = dto.SerialNumber,
+                IPAddress = dto.IpAddress ?? string.Empty,
+                MacAddress = dto.MacAddress ?? string.Empty,
+                PurchaseDate = DateTime.Now
+            };
 
             await _assetRepo.AddAsync(asset);
             await _assetRepo.SaveChangesAsync();
@@ -46,23 +58,25 @@ namespace EnterpriseAssetManagement.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = asset.Id }, asset);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id , AssetUpdateDto assetUpdateDto)
+        [Authorize(Roles = "Admin,IT_Manager")]
+        public async Task<IActionResult> Update(int id , [FromBody] AssetUpdateDto assetUpdateDto)
         {
             var assetfromDb = await _assetRepo.GetByIdAsync(id);
             if (assetfromDb == null)
             {
-                return NotFound(new { message = $"الجهاز رقم {id} مش موجود في السيستم عشان تعدله" });
+                return NotFound(new { message = $"Device number {id} not found in the system to edit it"});
             }
             assetfromDb.Name = assetUpdateDto.Name;
             assetfromDb.AssetType = assetUpdateDto.AssetType;
+            assetfromDb.Model = assetUpdateDto.Model;
             assetfromDb.SerialNumber = assetUpdateDto.SerialNumber;
-            assetfromDb.IPAddress = assetUpdateDto.IpAddress;
-            assetfromDb.MacAddress = assetUpdateDto.MacAddress;
+            assetfromDb.IPAddress = assetUpdateDto.IpAddress ?? string.Empty;
+            assetfromDb.MacAddress = assetUpdateDto.MacAddress ?? string.Empty;
              
 
             _assetRepo.Update(assetfromDb);
             await _assetRepo.SaveChangesAsync();
-            return Ok(new { message = "تم نعديل الجهاز بنجاح من قاعدة البيانات" , data = assetfromDb });
+            return Ok(new { message = "Device updated successfully in the database", data = assetfromDb });
         }
           
         
@@ -73,14 +87,14 @@ namespace EnterpriseAssetManagement.API.Controllers
             var asset = await _assetRepo.GetByIdAsync(id);
             if (asset == null)
             {
-                return NotFound(new { message = $"الجهاز رقم {id} مش موجود في السيستم عشان أمسحه" });
+                return NotFound(new { message = $"Device number {id} not found in the system to delete it" });
             }
 
             _assetRepo.Delete(asset);
 
             await _assetRepo.SaveChangesAsync();
 
-            return Ok(new { message = "تم حذف الجهاز بنجاح من قاعدة البيانات" });
+            return Ok(new { message = "Device deleted successfully from the database" });
         }
      }
     }

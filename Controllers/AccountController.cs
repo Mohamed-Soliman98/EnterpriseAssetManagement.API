@@ -37,7 +37,7 @@ namespace EnterpriseAssetManagement.API.Controllers
             IdentityResult result = await userManager.CreateAsync(user,registerDto.Password);
             if (result.Succeeded)
             {
-                return Ok(new { message = "تم تسجيل بنجاح في السيستم!" });
+                return Ok(new { message = "Registered successfully in the system!" });
             }
             foreach (var error in result.Errors)
             {
@@ -61,7 +61,7 @@ namespace EnterpriseAssetManagement.API.Controllers
                 var UserClaims = new List<Claim>();
                 UserClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
                 UserClaims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
-                UserClaims.Add(new Claim(ClaimTypes.Name,user.UserName));
+                UserClaims.Add(new Claim(ClaimTypes.Name,user.UserName!));
 
                 //2
                 var UserRole = await userManager.GetRolesAsync(user);
@@ -71,15 +71,15 @@ namespace EnterpriseAssetManagement.API.Controllers
                 }
 
                 //3
-                var SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecritKey"]));
+                var SigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!));
                 var signingCred = new SigningCredentials (SigningKey,SecurityAlgorithms.HmacSha256);
 
                 //4
                 var tokenExpiration = DateTime.UtcNow.AddHours(1);
                 var Token = new JwtSecurityToken
                 (
-                    issuer: configuration["Jwt:issuerIP"],
-                    audience: configuration["Jwt:AudienceIP"],
+                    issuer: configuration["Jwt:Issuer"],
+                    audience: configuration["Jwt:Audience"],
                     expires: tokenExpiration,
                     claims: UserClaims,
                     signingCredentials: signingCred
@@ -90,7 +90,7 @@ namespace EnterpriseAssetManagement.API.Controllers
                 {
                     Token = new JwtSecurityTokenHandler().WriteToken(Token),
                     expiration = tokenExpiration,
-                    message = "تم تسجيل الدخول بنجاح يا بشمبرمج"
+                    message = "Logged in successfully"
                 });
 
             }
@@ -101,17 +101,17 @@ namespace EnterpriseAssetManagement.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AssignRole(string userName ,string roleName)
         {
-            var user = await userManager.FindByIdAsync(userName);
-            if (user == null) return NotFound("المستخدم ده مش موجود في السيستم");
+            var user = await userManager.FindByNameAsync(userName);
+            if (user == null) return NotFound("This user does not exist in the system");
 
             if (roleName != "Admin" && roleName != "IT_Manager")
             {
-                return BadRequest("الرتبة المبعوتة غير مدعومة في نظام");
+                return BadRequest("in the system The submitted role is not supported");
             }
             var result = await userManager.AddToRoleAsync(user, roleName);
             if (result.Succeeded)
             {
-                return Ok(new { message = $"تم تعيين رتبة ({roleName}) للمستخدم ({userName}) بنجاح!" });
+                return Ok(new { message = $"Role ({roleName}) has been successfully assigned to user ({userName})!" });
             }
             return BadRequest(result.Errors);   
         }

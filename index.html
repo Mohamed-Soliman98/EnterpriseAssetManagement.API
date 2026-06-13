@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الأصول والصيانة | لوحة التحكم</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #1e293b;
+            --primary-light: #334155;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-400: #94a3b8;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --sidebar-width: 270px;
+            --header-height: 64px;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Cairo', 'Segoe UI', system-ui, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            overflow: hidden;
+        }
+
+        /* ── Login Screen ── */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-screen::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+            top: -200px;
+            left: -200px;
+            border-radius: 50%;
+        }
+        .login-screen::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%);
+            bottom: -150px;
+            right: -150px;
+            border-radius: 50%;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            border: none;
+            border-radius: var(--radius);
+            background: rgba(255,255,255,0.98);
+            box-shadow: var(--shadow-lg);
+            padding: 40px 36px;
+            position: relative;
+            z-index: 1;
+        }
+        .login-card .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 1.6rem;
+        }
+        .login-card h4 { font-weight: 800; font-size: 1.35rem; }
+        .login-card .subtitle { color: var(--gray-400); font-size: 0.85rem; }
+        .login-card .form-control {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--gray-200);
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .login-card .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        }
+        .login-card .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+        .login-card .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+        }
+
+        /* ── Dashboard Layout ── */
+        .dashboard { display: flex; height: 100vh; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+        }
+        .sidebar-brand {
+            padding: 18px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+        }
+        .sidebar-brand .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .sidebar-nav .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 24px;
+            color: rgba(255,255,255,0.55);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 3px solid transparent;
+            text-decoration: none;
+        }
+        .sidebar-nav .nav-item i { width: 20px; text-align: center; font-size: 1rem; }
+        .sidebar-nav .nav-item:hover {
+            color: white;
+            background: rgba(255,255,255,0.04);
+        }
+        .sidebar-nav .nav-item.active {
+            color: white;
+            background: rgba(59,130,246,0.12);
+            border-right-color: var(--accent);
+        }
+        .sidebar-nav .nav-item .badge-count {
+            margin-right: auto;
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.6);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .sidebar-footer .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        .sidebar-footer .user-info .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .sidebar-footer .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 9px 0;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sidebar-footer .logout-btn:hover {
+            background: rgba(239,68,68,0.12);
+            border-color: rgba(239,68,68,0.3);
+            color: #fca5a5;
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--gray-50);
+        }
+        .main-header {
+            height: var(--header-height);
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+        .main-header h5 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        .main-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .main-header .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .main-header .status-badge .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .content-body {
+            flex: 1;
+            padding: 28px 32px;
+            overflow-y: auto;
+        }
+
+        /* ── Cards ── */
+        .card-custom {
+            background: white;
+            border: none;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .card-custom .card-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-custom .card-title i { color: var(--accent); }
+
+        /* ── Stats Row ── */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .stat-card .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-card .stat-icon.blue { background: #eff6ff; color: var(--accent); }
+        .stat-card .stat-icon.red { background: #fef2f2; color: var(--danger); }
+        .stat-card .stat-icon.green { background: #f0fdf4; color: var(--success); }
+        .stat-card .stat-icon.amber { background: #fffbeb; color: var(--warning); }
+        .stat-card .stat-info h3 { font-size: 1.5rem; font-weight: 800; margin: 0; line-height: 1.2; }
+        .stat-card .stat-info p { margin: 0; color: var(--gray-400); font-size: 0.82rem; font-weight: 500; }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .toolbar .btn-primary {
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            padding: 10px 20px;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+        }
+        .toolbar .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .toolbar .btn-outline-secondary {
+            border: 1.5px solid var(--gray-200);
+            color: var(--gray-600);
+            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .toolbar .btn-outline-secondary:hover { background: var(--gray-100); border-color: var(--gray-400); }
+
+        /* ── Table ── */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        .table-wrap table { margin: 0; font-size: 0.88rem; }
+        .table-wrap thead th {
+            background: var(--gray-100);
+            color: var(--gray-600);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 12px 16px;
+            border-bottom: none;
+            white-space: nowrap;
+        }
+        .table-wrap tbody td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .table-wrap tbody tr:hover { background: var(--gray-50); }
+        .table-wrap tbody tr:last-child td { border-bottom: none; }
+        .table-wrap .id-badge {
+            background: var(--gray-100);
+            color: var(--gray-600);
+            font-weight: 700;
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+        .table-wrap code {
+            font-family: 'Consolas', monospace;
+            background: var(--gray-100);
+            color: var(--danger);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .table-wrap .type-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: #eff6ff;
+            color: var(--accent);
+        }
+        .table-wrap .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            color: var(--gray-400);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .table-wrap .action-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: #fef2f2;
+        }
+        .table-wrap .engineer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            background: #f0f9ff;
+            color: #0369a1;
+        }
+        .cost-cell { font-weight: 700; color: var(--danger); direction: ltr; display: inline-block; }
+
+        /* ── Forms ── */
+        .form-label { font-weight: 600; font-size: 0.82rem; color: var(--gray-600); margin-bottom: 6px; }
+        .form-control, .form-select {
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--gray-200);
+            font-size: 0.9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        /* ── Modals ── */
+        .modal-content {
+            border: none;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--gray-100);
+            padding: 20px 24px;
+        }
+        .modal-header .modal-title { font-weight: 700; font-size: 1rem; }
+        .modal-body { padding: 24px; }
+        .modal-footer { border-top: 1px solid var(--gray-100); padding: 16px 24px; }
+        .modal-footer .btn {
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            padding: 10px 24px;
+            font-size: 0.88rem;
+        }
+        .modal-footer .btn-primary { background: var(--accent); border: none; }
+        .modal-footer .btn-primary:hover { background: var(--accent-hover); }
+        .modal-footer .btn-danger { background: var(--danger); border: none; }
+
+        /* ── Tabs ── */
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ── Responsive ── */
+        @media (max-width: 992px) {
+            .sidebar { width: 60px; }
+            .sidebar-brand span, .sidebar-nav .nav-item span, .sidebar-nav .nav-item .badge-count, .sidebar-footer .user-info span, .sidebar-footer .logout-btn span { display: none; }
+            .sidebar-brand { justify-content: center; padding: 18px 0; }
+            .sidebar-nav .nav-item { justify-content: center; padding: 13px 0; border-right: none; border-bottom: 3px solid transparent; }
+            .sidebar-nav .nav-item.active { border-right: none; border-bottom-color: var(--accent); }
+            .sidebar-footer { display: flex; flex-direction: column; align-items: center; padding: 12px 8px; }
+            .sidebar-footer .user-info { justify-content: center; }
+            .sidebar-footer .logout-btn { justify-content: center; padding: 9px; }
+            .main-content { width: calc(100% - 60px); }
+        }
+        @media (max-width: 768px) {
+            .content-body { padding: 20px 16px; }
+            .main-header { padding: 0 16px; flex-wrap: wrap; height: auto; min-height: var(--header-height); gap: 8px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .stat-card { padding: 14px 16px; }
+            .stat-card .stat-icon { width: 40px; height: 40px; font-size: 1rem; }
+            .stat-card .stat-info h3 { font-size: 1.2rem; }
+        }
+        @media (max-width: 480px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .login-card { padding: 28px 20px; }
+        }
+
+        /* Scrollbar */
+        .content-body::-webkit-scrollbar { width: 6px; }
+        .content-body::-webkit-scrollbar-track { background: transparent; }
+        .content-body::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+        .content-body::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════ LOGIN ═══════════════ -->
+    <div id="loginSection" class="login-screen">
+        <div class="login-card">
+            <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="text-center mb-4">
+                <h4 class="fw-bold">تسجيل الدخول</h4>
+                <p class="subtitle">نظام إدارة الأصول والصيانة</p>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">اسم المستخدم</label>
+                <input type="text" id="username" class="form-control" placeholder="super.admin" dir="ltr">
+            </div>
+            <div class="mb-4">
+                <label class="form-label">كلمة المرور</label>
+                <input type="password" id="password" class="form-control" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" dir="ltr">
+            </div>
+            <button onclick="login()" class="btn btn-primary w-100 py-2 fw-bold">
+                <i class="fa-solid fa-arrow-left-to-bracket me-1"></i> دخول للوحة التحكم
+            </button>
+            <div id="loginAlert" class="mt-3 alert d-none py-2 text-center small fw-medium"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ DASHBOARD ═══════════════ -->
+    <div id="dashboardSection" class="dashboard d-none">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                <span>إدارة الأصول</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item active" onclick="switchTab('assetsTab', this)">
+                    <i class="fa-solid fa-server"></i>
+                    <span>الأجهزة والأصول</span>
+                    <span class="badge-count" id="assetsCount">0</span>
+                </a>
+                <a class="nav-item" onclick="switchTab('maintenanceTab', this)">
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                    <span>سجلات الصيانة</span>
+                    <span class="badge-count" id="logsCount">0</span>
+                </a>
+                <a class="nav-item" onclick="switchTab('usersTab', this)">
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>المستخدمين والصلاحيات</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar" id="sidebarAvatar">M</div>
+                    <span id="sidebarUser">المشرف</span>
+                </div>
+                <button onclick="logout()" class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>تسجيل خروج</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <h5 id="pageTitle"><i class="fa-solid fa-server text-primary me-2"></i>الأجهزة والأصول</h5>
+                <div class="header-actions">
+                    <span class="status-badge" id="userBadge">
+                        <span class="dot"></span>
+                        <span><i class="fa-solid fa-user-check me-1"></i> متصل</span>
+                    </span>
+                </div>
+            </header>
+
+            <!-- Content Body -->
+            <div class="content-body">
+
+                <!-- ═══ ASSETS TAB ═══ -->
+                <div id="assetsTab" class="tab-pane active">
+                    <!-- Stats -->
+                    <div class="stats-row" id="assetsStats">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fa-solid fa-server"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statTotalAssets">0</h3>
+                                <p>إجمالي الأجهزة</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statAssigned">0</h3>
+                                <p>مُسنَد</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon amber"><i class="fa-solid fa-circle-exclamation"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statUnassigned">0</h3>
+                                <p>غير مُسنَد</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statInMaintenance">0</h3>
+                                <p>تحت الصيانة</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="toolbar">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAssetModal">
+                            <i class="fa-solid fa-plus me-1"></i> إضافة جهاز
+                        </button>
+                        <button onclick="loadAssets()" class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-rotate"></i> تحديث
+                        </button>
+                    </div>
+
+                    <div class="card-custom">
+                        <div class="table-wrap">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>اسم الجهاز</th>
+                                        <th>النوع</th>
+                                        <th>السيريال</th>
+                                        <th>IP</th>
+                                        <th>MAC</th>
+                                        <th>تاريخ الشراء</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assetsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ MAINTENANCE TAB ═══ -->
+                <div id="maintenanceTab" class="tab-pane">
+                    <div class="stats-row" id="maintenanceStats">
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i class="fa-solid fa-file-invoice"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statTotalLogs">0</h3>
+                                <p>إجمالي بلاغات الصيانة</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon amber"><i class="fa-solid fa-coins"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statTotalCost">0</h3>
+                                <p>إجمالي التكاليف</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fa-solid fa-calendar-week"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statThisMonth">0</h3>
+                                <p>صيانة هذا الشهر</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="toolbar">
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addLogModal">
+                            <i class="fa-solid fa-plus me-1"></i> تسجيل صيانة
+                        </button>
+                        <button onclick="loadMaintenanceLogs()" class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-rotate"></i> تحديث
+                        </button>
+                    </div>
+
+                    <div class="card-custom">
+                        <div class="table-wrap">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>الجهاز</th>
+                                        <th>المهندس</th>
+                                        <th>تاريخ الصيانة</th>
+                                        <th>وصف العطل</th>
+                                        <th>التكلفة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ USERS TAB ═══ -->
+                <div id="usersTab" class="tab-pane">
+                    <div class="row g-4">
+                        <div class="col-xl-5 col-lg-12">
+                            <div class="card-custom">
+                                <div class="card-title"><i class="fa-solid fa-user-plus"></i> تسجيل موظف جديد</div>
+                                <div class="mb-3">
+                                    <label class="form-label">الاسم بالكامل</label>
+                                    <input type="text" id="regFullName" class="form-control" placeholder="محمد سليمان">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">اسم المستخدم</label>
+                                    <input type="text" id="regUser" class="form-control" placeholder="mohamed.soliman" dir="ltr">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">البريد الإلكتروني</label>
+                                    <input type="email" id="regEmail" class="form-control" placeholder="it@school.com" dir="ltr">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">القسم</label>
+                                    <input type="text" id="regDept" class="form-control" placeholder="IT Core Team">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label">كلمة المرور</label>
+                                    <input type="password" id="regPass" class="form-control" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" dir="ltr">
+                                </div>
+                                <button onclick="registerUser()" class="btn btn-primary w-100 fw-bold py-2">
+                                    <i class="fa-solid fa-check me-1"></i> إنشاء الحساب
+                                </button>
+                                <div id="registerAlert" class="mt-2 alert d-none py-2 text-center small fw-medium"></div>
+                            </div>
+                        </div>
+                        <div class="col-xl-7 col-lg-12">
+                            <div class="card-custom">
+                                <div class="card-title"><i class="fa-solid fa-user-shield text-warning"></i> ترقية الصلاحيات</div>
+                                <p class="text-muted small mb-3">
+                                    اليوزرز الجدد بدون رتبة لحماية النظام. استخدم الفورم ده لترقيتهم.
+                                </p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">اسم المستخدم</label>
+                                        <input type="text" id="roleUser" class="form-control" placeholder="mohamed.soliman" dir="ltr">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">الدور الأمني</label>
+                                        <select id="roleSelect" class="form-select">
+                                            <option value="IT_Manager">IT_Manager - مشاهدة + إضافة + تعديل</option>
+                                            <option value="Admin">Admin - صلاحيات كاملة</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 mt-4">
+                                        <button onclick="assignRole()" class="btn btn-warning w-100 fw-bold py-2 text-dark">
+                                            <i class="fa-solid fa-shield-halved me-1"></i> حفظ وترقية الحساب
+                                        </button>
+                                        <div id="roleAlert" class="mt-2 alert d-none py-2 text-center small fw-medium"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-custom">
+                                <div class="card-title"><i class="fa-solid fa-people-group"></i> المستخدمين النشطين</div>
+                                <div class="table-wrap">
+                                    <table class="table">
+                                        <thead>
+                                            <tr><th>اسم المستخدم</th><th>القسم</th><th>الدور</th><th>الحالة</th></tr>
+                                        </thead>
+                                        <tbody id="usersTableBody">
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="fa-solid fa-circle-info me-1"></i> اضغط تحديث لعرض المستخدمين
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ═══════════════ MODALS ═══════════════ -->
+
+    <!-- Add Asset Modal -->
+    <div class="modal fade" id="addAssetModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-plus-circle text-primary me-1"></i> إضافة جهاز جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">اسم الجهاز</label>
+                        <input type="text" id="assetName" class="form-control" placeholder="مثال: راوتر FortiGate 60F">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">النوع</label>
+                        <input type="text" id="assetType" class="form-control" placeholder="Firewall / Switch / Server">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الطراز (Model)</label>
+                        <input type="text" id="assetModel" class="form-control" placeholder="Dell PowerEdge R740">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">السيريال نمبر</label>
+                        <input type="text" id="assetSerial" class="form-control" placeholder="SN-12345-ABCDE">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">IP Address</label>
+                            <input type="text" id="assetIP" class="form-control" dir="ltr" placeholder="192.168.1.99">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mac Address</label>
+                            <input type="text" id="assetMac" class="form-control" dir="ltr" placeholder="00:15:5D:01:EF:11">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" onclick="submitAsset()" class="btn btn-primary">
+                        <i class="fa-solid fa-check me-1"></i> حفظ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Maintenance Log Modal -->
+    <div class="modal fade" id="addLogModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-file-invoice-dollar text-danger me-1"></i> تسجيل صيانة جديدة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">رقم الجهاز (Asset ID)</label>
+                        <input type="number" id="logAssetId" class="form-control" placeholder="2">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">وصف المشكلة والإصلاح</label>
+                        <textarea id="logDesc" class="form-control" rows="3" placeholder="تحديث الفيرمير وحل مشكلة الـ Routing"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تكلفة الصيانة (EGP)</label>
+                        <input type="number" id="logCost" class="form-control" placeholder="1500">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" onclick="submitMaintenance()" class="btn btn-danger">
+                        <i class="fa-solid fa-check me-1"></i> تسجيل
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const BASE_URL = "https://localhost:7273/api";
+        let JWT_TOKEN = "";
+
+        // ── Tab Switching ──
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.sidebar-nav .nav-item').forEach(l => l.classList.remove('active'));
+            element.classList.add('active');
+            const titles = {
+                'assetsTab': '<i class="fa-solid fa-server text-primary me-2"></i>الأجهزة والأصول',
+                'maintenanceTab': '<i class="fa-solid fa-screwdriver-wrench text-danger me-2"></i>سجلات الصيانة',
+                'usersTab': '<i class="fa-solid fa-users-gear text-warning me-2"></i>المستخدمين والصلاحيات'
+            };
+            document.getElementById('pageTitle').innerHTML = titles[tabId];
+        }
+
+        // ── Login ──
+        async function login() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
+            const alertBox = document.getElementById('loginAlert');
+            if (!user || !pass) {
+                alertBox.className = "mt-3 alert alert-danger py-2 text-center small fw-medium";
+                alertBox.innerText = "يرجى إدخال اسم المستخدم وكلمة المرور";
+                alertBox.classList.remove('d-none');
+                return;
+            }
+            try {
+                const response = await fetch(`${BASE_URL}/Account/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    JWT_TOKEN = data.token;
+                    document.getElementById('loginSection').classList.add('d-none');
+                    document.getElementById('dashboardSection').classList.remove('d-none');
+                    document.getElementById('userBadge').innerHTML =
+                        '<span class="dot"></span><span><i class="fa-solid fa-user-check me-1"></i> ' + user + '</span>';
+                    document.getElementById('sidebarUser').textContent = user;
+                    document.getElementById('sidebarAvatar').textContent = user.charAt(0).toUpperCase();
+                    loadAssets();
+                    loadMaintenanceLogs();
+                } else {
+                    alertBox.className = "mt-3 alert alert-danger py-2 text-center small fw-medium";
+                    alertBox.innerText = "بيانات الدخول غير صحيحة!";
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (e) {
+                alertBox.className = "mt-3 alert alert-warning py-2 text-center small fw-medium";
+                alertBox.innerText = "❌ تعذر الاتصال بالخادم. تأكد من تشغيل الباك اند.";
+                alertBox.classList.remove('d-none');
+            }
+        }
+
+        // ── Load Assets ──
+        async function loadAssets() {
+            const tbody = document.getElementById('assetsTableBody');
+            try {
+                const response = await fetch(`${BASE_URL}/Assets`, {
+                    headers: { 'Authorization': `Bearer ${JWT_TOKEN}` }
+                });
+                if (!response.ok) throw new Error('Unauthorized');
+                const assets = await response.json();
+                tbody.innerHTML = '';
+                let assigned = 0, unassigned = 0;
+                assets.forEach(asset => {
+                    if (asset.isAssigned) assigned++; else unassigned++;
+                    tbody.innerHTML += `<tr>
+                        <td><span class="id-badge">${asset.id}</span></td>
+                        <td class="fw-semibold">${asset.name}</td>
+                        <td><span class="type-badge">${asset.assetType || '-'}</span></td>
+                        <td><code>${asset.serialNumber || '—'}</code></td>
+                        <td><code>${asset.ipAddress || '—'}</code></td>
+                        <td><code>${asset.macAddress || '—'}</code></td>
+                        <td class="small text-secondary">${asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString('ar-EG') : '—'}</td>
+                        <td>
+                            <button class="action-btn" onclick="deleteAsset(${asset.id})" title="حذف">
+                                <i class="fa-solid fa-trash-can fa-xs"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('assetsCount').textContent = assets.length;
+                document.getElementById('statTotalAssets').textContent = assets.length;
+                document.getElementById('statAssigned').textContent = assigned;
+                document.getElementById('statUnassigned').textContent = unassigned;
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> فشل تحميل الأجهزة
+                </td></tr>`;
+            }
+        }
+
+        // ── Load Maintenance Logs ──
+        async function loadMaintenanceLogs() {
+            const tbody = document.getElementById('logsTableBody');
+            try {
+                const response = await fetch(`${BASE_URL}/MaintenanceLogs`, {
+                    headers: { 'Authorization': `Bearer ${JWT_TOKEN}` }
+                });
+                if (!response.ok) throw new Error('Unauthorized');
+                const logs = await response.json();
+                tbody.innerHTML = '';
+                let totalCost = 0, thisMonth = 0;
+                const now = new Date();
+                logs.forEach(log => {
+                    const date = log.maintenanceDate ? new Date(log.maintenanceDate) : null;
+                    const formatted = date ? date.toLocaleDateString('ar-EG', {
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit'
+                    }) : '—';
+                    totalCost += log.cost || 0;
+                    if (date && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) thisMonth++;
+                    tbody.innerHTML += `<tr>
+                        <td><span class="id-badge">${log.id}</span></td>
+                        <td>
+                            <span class="fw-semibold d-block">${log.assetName || 'جهاز غير معروف'}</span>
+                            <small class="text-secondary">ID: ${log.assetId}</small>
+                        </td>
+                        <td><span class="engineer-badge"><i class="fa-solid fa-user-gear"></i> ${log.engineerName || 'غير مسجل'}</span></td>
+                        <td class="small text-secondary">${formatted}</td>
+                        <td class="text-secondary" style="max-width:250px;white-space:normal;">${log.description || ''}</td>
+                        <td><span class="cost-cell">${(log.cost || 0).toLocaleString()} EGP</span></td>
+                    </tr>`;
+                });
+                document.getElementById('logsCount').textContent = logs.length;
+                document.getElementById('statTotalLogs').textContent = logs.length;
+                document.getElementById('statTotalCost').textContent = totalCost.toLocaleString() + ' EGP';
+                document.getElementById('statThisMonth').textContent = thisMonth;
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> فشل تحميل سجلات الصيانة
+                </td></tr>`;
+            }
+        }
+
+        // ── Submit Asset ──
+        async function submitAsset() {
+            const body = {
+                name: document.getElementById('assetName').value.trim(),
+                assetType: document.getElementById('assetType').value.trim(),
+                model: document.getElementById('assetModel').value.trim(),
+                serialNumber: document.getElementById('assetSerial').value.trim(),
+                ipAddress: document.getElementById('assetIP').value.trim(),
+                macAddress: document.getElementById('assetMac').value.trim()
+            };
+            if (!body.name) { alert('يرجى إدخال اسم الجهاز'); return; }
+            try {
+                const response = await fetch(`${BASE_URL}/Assets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${JWT_TOKEN}` },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addAssetModal')).hide();
+                    document.querySelectorAll('#addAssetModal input').forEach(i => i.value = '');
+                    loadAssets();
+                } else if (response.status === 403) {
+                    alert('⛔ ليس لديك صلاحية الإضافة. اتصل بالأدمن.');
+                } else {
+                    const err = await response.text();
+                    alert('فشل الإضافة: ' + err);
+                }
+            } catch (e) {
+                alert('❌ خطأ في الاتصال بالخادم.');
+            }
+        }
+
+        // ── Delete Asset ──
+        async function deleteAsset(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا الأصل نهائياً؟')) return;
+            try {
+                const response = await fetch(`${BASE_URL}/Assets/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${JWT_TOKEN}` }
+                });
+                if (response.ok) {
+                    loadAssets();
+                } else if (response.status === 403) {
+                    alert('⛔ ليس لديك صلاحية الحذف! الأدمن فقط.');
+                } else {
+                    alert('فشل الحذف.');
+                }
+            } catch (e) {
+                alert('❌ خطأ في الاتصال.');
+            }
+        }
+
+        // ── Submit Maintenance ──
+        async function submitMaintenance() {
+            const body = {
+                assetId: parseInt(document.getElementById('logAssetId').value),
+                description: document.getElementById('logDesc').value.trim(),
+                cost: parseFloat(document.getElementById('logCost').value) || 0
+            };
+            if (!body.assetId) { alert('يرجى إدخال رقم الجهاز'); return; }
+            try {
+                const response = await fetch(`${BASE_URL}/MaintenanceLogs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${JWT_TOKEN}` },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addLogModal')).hide();
+                    document.querySelectorAll('#addLogModal input, #addLogModal textarea').forEach(i => i.value = '');
+                    loadMaintenanceLogs();
+                } else {
+                    alert('فشل تسجيل الصيانة.');
+                }
+            } catch (e) {
+                alert('❌ خطأ في الاتصال.');
+            }
+        }
+
+        // ── Register User ──
+        async function registerUser() {
+            const body = {
+                fullName: document.getElementById('regFullName').value.trim(),
+                username: document.getElementById('regUser').value.trim(),
+                email: document.getElementById('regEmail').value.trim(),
+                department: document.getElementById('regDept').value.trim(),
+                password: document.getElementById('regPass').value
+            };
+            if (!body.fullName || !body.username || !body.password) {
+                alert('يرجى ملء الحقول الأساسية (الاسم، اسم المستخدم، كلمة المرور)');
+                return;
+            }
+            const alertBox = document.getElementById('registerAlert');
+            try {
+                const response = await fetch(`${BASE_URL}/Account/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    alertBox.className = "mt-2 alert alert-success py-2 text-center small fw-medium";
+                    alertBox.innerText = '✅ تم إنشاء الحساب! يمكنك ترقيته من قسم الصلاحيات.';
+                    alertBox.classList.remove('d-none');
+                    document.querySelectorAll('#usersTab input').forEach(i => i.value = '');
+                } else {
+                    alertBox.className = "mt-2 alert alert-danger py-2 text-center small fw-medium";
+                    alertBox.innerText = 'فشل إنشاء الحساب.';
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (e) {
+                alertBox.className = "mt-2 alert alert-warning py-2 text-center small fw-medium";
+                alertBox.innerText = '❌ خطأ في الاتصال.';
+                alertBox.classList.remove('d-none');
+            }
+        }
+
+        // ── Assign Role ──
+        async function assignRole() {
+            const user = document.getElementById('roleUser').value.trim();
+            const role = document.getElementById('roleSelect').value;
+            if (!user) { alert('يرجى إدخال اسم المستخدم'); return; }
+            const alertBox = document.getElementById('roleAlert');
+            try {
+                const response = await fetch(`${BASE_URL}/Account/assign-role?username=${encodeURIComponent(user)}&roleName=${role}`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${JWT_TOKEN}` }
+                });
+                if (response.ok) {
+                    alertBox.className = "mt-2 alert alert-success py-2 text-center small fw-medium";
+                    alertBox.innerText = `✅ تمت ترقية ${user} إلى ${role} بنجاح!`;
+                    alertBox.classList.remove('d-none');
+                } else {
+                    alertBox.className = "mt-2 alert alert-danger py-2 text-center small fw-medium";
+                    alertBox.innerText = 'فشل الترقية.';
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (e) {
+                alertBox.className = "mt-2 alert alert-warning py-2 text-center small fw-medium";
+                alertBox.innerText = '❌ خطأ في الاتصال.';
+                alertBox.classList.remove('d-none');
+            }
+        }
+
+        // ── Enter key support for login ──
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('password').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') login();
+            });
+            document.getElementById('username').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') document.getElementById('password').focus();
+            });
+        });
+
+        // ── Logout ──
+        function logout() {
+            if (!confirm('هل تريد تسجيل الخروج من لوحة التحكم؟')) return;
+            JWT_TOKEN = '';
+            document.getElementById('dashboardSection').classList.add('d-none');
+            document.getElementById('dashboardSection').classList.remove('d-flex');
+            document.getElementById('loginSection').classList.remove('d-none');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginAlert').classList.add('d-none');
+        }
+    </script>
+</body>
+</html>

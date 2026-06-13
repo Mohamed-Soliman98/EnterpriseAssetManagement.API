@@ -26,14 +26,14 @@ namespace EnterpriseAssetManagement.API.Data
                 {
                     UserName = "super.admin",
                     Email = "admin@school.com",
-                    FullName = "المدير العام للسيستم",
+                    FullName = "System Administrator",
                     Department = "IT Management"
                 };
 
                 // بنحاول نكريت اليوزر
-                var createPower = await userManager.CreateAsync(newAdmin, "Admin@2026!");
+                var createResult = await userManager.CreateAsync(newAdmin, "Admin@2026!");
 
-                if (createPower.Succeeded)
+                if (createResult.Succeeded)
                 {
                     // لو نجح بنربطه بالدور
                     await userManager.AddToRoleAsync(newAdmin, "Admin");
@@ -41,8 +41,8 @@ namespace EnterpriseAssetManagement.API.Data
                 else
                 {
               
-                    var errors = string.Join(", ", createPower.Errors.Select(e => e.Description));
-                    throw new Exception($"فشل إنشاء يوزر الـ Admin بسبب: {errors}");
+                    var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    throw new Exception($"Failed to create Admin user due to: {errors}");
                 }
             }
         }

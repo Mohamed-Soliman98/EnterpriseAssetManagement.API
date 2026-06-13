@@ -50,10 +50,10 @@ namespace EnterpriseAssetManagement.API
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = builder.Configuration["Jwt:issuerIP"],
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"]!,
                     ValidateAudience = true,
-                    ValidAudience = builder.Configuration["Jwt:AudienceIP"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecritKey"])),
+                    ValidAudience = builder.Configuration["Jwt:Audience"]!,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 };
@@ -102,7 +102,7 @@ namespace EnterpriseAssetManagement.API
                 {
                     // لو حصل مشكلة في السيرفر وقت القيوم بيطبعها هنا
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "حصلت مشكلة وأنا بكريت الـ Roles في الداتا بيز");
+                    logger.LogError(ex, "I had an issue while creating the Roles in the database");
                 }
             }
             app.Run();

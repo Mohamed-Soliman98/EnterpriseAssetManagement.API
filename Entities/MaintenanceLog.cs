@@ -14,7 +14,7 @@ namespace EnterpriseAssetManagement.API.Entities
         public int AssetId { get; set; }
         public Asset? Asset { get; set; }
 
-        [ForeignKey("PerformedBy")]
+        [ForeignKey(nameof(User))]
         public string UserId { get; set; } = string.Empty;
         public ApplicationUser? User { get; set; }
     }

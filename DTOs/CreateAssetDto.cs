@@ -1,13 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EnterpriseAssetManagement.API.DTOs
 {
-    public class AssetUpdateDto
+    public class CreateAssetDto
     {
-        [Required]
+        [Required(ErrorMessage = "Device name is required")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Asset type is required")]
         public string AssetType { get; set; } = string.Empty;
 
         public string Model { get; set; } = string.Empty;
