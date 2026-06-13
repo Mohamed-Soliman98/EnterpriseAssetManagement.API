@@ -708,6 +708,7 @@
                                         <th>تاريخ الصيانة</th>
                                         <th>وصف العطل</th>
                                         <th>التكلفة</th>
+                                        <th>العمليات</th>
                                     </tr>
                                 </thead>
                                 <tbody id="logsTableBody"></tbody>
@@ -739,7 +740,7 @@
                                     <input type="text" id="regDept" class="form-control" placeholder="IT Core Team">
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label">كلمة المرور</label>
+                                    <label class="form-label">كلمة المرور <small class="text-danger">(6 أحرف + رقم)</small></label>
                                     <input type="password" id="regPass" class="form-control" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" dir="ltr">
                                 </div>
                                 <button onclick="registerUser()" class="btn btn-primary w-100 fw-bold py-2">
@@ -880,6 +881,39 @@
         </div>
     </div>
 
+    <!-- Edit Maintenance Log Modal -->
+    <div class="modal fade" id="editLogModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-pen-to-square text-primary me-1"></i> تعديل سجل الصيانة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editLogId">
+                    <div class="mb-3">
+                        <label class="form-label">رقم الجهاز (Asset ID)</label>
+                        <input type="number" id="editLogAssetId" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">وصف المشكلة والإصلاح</label>
+                        <textarea id="editLogDesc" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تكلفة الصيانة (EGP)</label>
+                        <input type="number" id="editLogCost" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" onclick="submitEditLog()" class="btn btn-primary">
+                        <i class="fa-solid fa-check me-1"></i> حفظ التعديلات
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const BASE_URL = "https://localhost:7273/api";
@@ -928,8 +962,10 @@
                     loadAssets();
                     loadMaintenanceLogs();
                 } else {
+                    const errData = await response.json();
+                    const msg = errData.message || errData.title || 'بيانات الدخول غير صحيحة!';
                     alertBox.className = "mt-3 alert alert-danger py-2 text-center small fw-medium";
-                    alertBox.innerText = "بيانات الدخول غير صحيحة!";
+                    alertBox.innerText = msg;
                     alertBox.classList.remove('d-none');
                 }
             } catch (e) {
@@ -1008,6 +1044,14 @@
                         <td class="small text-secondary">${formatted}</td>
                         <td class="text-secondary" style="max-width:250px;white-space:normal;">${log.description || ''}</td>
                         <td><span class="cost-cell">${(log.cost || 0).toLocaleString()} EGP</span></td>
+                        <td>
+                            <button class="action-btn" onclick="editLog(${log.id})" title="تعديل" style="color:var(--accent);border-color:var(--accent);">
+                                <i class="fa-solid fa-pen-to-square fa-xs"></i>
+                            </button>
+                            <button class="action-btn" onclick="deleteLog(${log.id})" title="حذف">
+                                <i class="fa-solid fa-trash-can fa-xs"></i>
+                            </button>
+                        </td>
                     </tr>`;
                 });
                 document.getElementById('logsCount').textContent = logs.length;
@@ -1015,7 +1059,7 @@
                 document.getElementById('statTotalCost').textContent = totalCost.toLocaleString() + ' EGP';
                 document.getElementById('statThisMonth').textContent = thisMonth;
             } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">
                     <i class="fa-solid fa-triangle-exclamation me-1"></i> فشل تحميل سجلات الصيانة
                 </td></tr>`;
             }
@@ -1112,6 +1156,14 @@
                 alert('يرجى ملء الحقول الأساسية (الاسم، اسم المستخدم، كلمة المرور)');
                 return;
             }
+            if (body.password.length < 6) {
+                alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                return;
+            }
+            if (!/\d/.test(body.password)) {
+                alert('كلمة المرور يجب أن تحتوي على رقم واحد على الأقل');
+                return;
+            }
             const alertBox = document.getElementById('registerAlert');
             try {
                 const response = await fetch(`${BASE_URL}/Account/register`, {
@@ -1125,8 +1177,10 @@
                     alertBox.classList.remove('d-none');
                     document.querySelectorAll('#usersTab input').forEach(i => i.value = '');
                 } else {
+                    const errData = await response.json();
+                    const errors = errData.errors ? Object.values(errData.errors).flat().join(' | ') : (errData.message || 'فشل إنشاء الحساب.');
                     alertBox.className = "mt-2 alert alert-danger py-2 text-center small fw-medium";
-                    alertBox.innerText = 'فشل إنشاء الحساب.';
+                    alertBox.innerText = errors;
                     alertBox.classList.remove('d-none');
                 }
             } catch (e) {
@@ -1152,8 +1206,10 @@
                     alertBox.innerText = `✅ تمت ترقية ${user} إلى ${role} بنجاح!`;
                     alertBox.classList.remove('d-none');
                 } else {
+                    const errData = await response.json();
+                    const msg = errData.message || errData.title || 'فشل الترقية.';
                     alertBox.className = "mt-2 alert alert-danger py-2 text-center small fw-medium";
-                    alertBox.innerText = 'فشل الترقية.';
+                    alertBox.innerText = msg;
                     alertBox.classList.remove('d-none');
                 }
             } catch (e) {
@@ -1172,6 +1228,69 @@
                 if (e.key === 'Enter') document.getElementById('password').focus();
             });
         });
+
+        // ── Edit Maintenance Log ──
+        async function editLog(id) {
+            try {
+                const response = await fetch(`${BASE_URL}/MaintenanceLogs/${id}`, {
+                    headers: { 'Authorization': `Bearer ${JWT_TOKEN}` }
+                });
+                if (!response.ok) throw new Error('Failed to fetch');
+                const log = await response.json();
+                document.getElementById('editLogId').value = log.id;
+                document.getElementById('editLogAssetId').value = log.assetId;
+                document.getElementById('editLogDesc').value = log.description;
+                document.getElementById('editLogCost').value = log.cost;
+                new bootstrap.Modal(document.getElementById('editLogModal')).show();
+            } catch (e) {
+                alert('❌ فشل تحميل بيانات السجل.');
+            }
+        }
+
+        async function submitEditLog() {
+            const id = document.getElementById('editLogId').value;
+            const body = {
+                assetId: parseInt(document.getElementById('editLogAssetId').value),
+                description: document.getElementById('editLogDesc').value.trim(),
+                cost: parseFloat(document.getElementById('editLogCost').value) || 0
+            };
+            if (!body.assetId) { alert('يرجى إدخال رقم الجهاز'); return; }
+            try {
+                const response = await fetch(`${BASE_URL}/MaintenanceLogs/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${JWT_TOKEN}` },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('editLogModal')).hide();
+                    loadMaintenanceLogs();
+                } else {
+                    alert('فشل تعديل السجل.');
+                }
+            } catch (e) {
+                alert('❌ خطأ في الاتصال.');
+            }
+        }
+
+        // ── Delete Maintenance Log ──
+        async function deleteLog(id) {
+            if (!confirm('هل أنت متأكد من حذف سجل الصيانة هذا نهائياً؟')) return;
+            try {
+                const response = await fetch(`${BASE_URL}/MaintenanceLogs/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${JWT_TOKEN}` }
+                });
+                if (response.ok) {
+                    loadMaintenanceLogs();
+                } else if (response.status === 403) {
+                    alert('⛔ ليس لديك صلاحية الحذف! الأدمن فقط.');
+                } else {
+                    alert('فشل الحذف.');
+                }
+            } catch (e) {
+                alert('❌ خطأ في الاتصال.');
+            }
+        }
 
         // ── Logout ──
         function logout() {
