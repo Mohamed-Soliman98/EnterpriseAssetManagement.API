@@ -30,9 +30,10 @@ namespace EnterpriseAssetManagement.API
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
             //
-            builder.Services.AddCors(options => {
-                options.AddDefaultPolicy(policy => {
-                    policy.AllowAnyOrigin()
+            builder.Services.AddCors( options => {
+
+                options.AddPolicy("Mypolicy", policy => {
+                    policy.WithOrigins("https://localhost:7273", "http://localhost:5295") 
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -82,7 +83,7 @@ namespace EnterpriseAssetManagement.API
 
             app.UseHttpsRedirection();
 
-            app.UseCors();
+            app.UseCors("Mypolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
