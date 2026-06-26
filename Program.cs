@@ -33,7 +33,7 @@ namespace EnterpriseAssetManagement.API
             builder.Services.AddCors( options => {
 
                 options.AddPolicy("Mypolicy", policy => {
-                    policy.WithOrigins("https://localhost:7273", "http://localhost:5295") 
+                    policy.SetIsOriginAllowed(_ => true) 
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
