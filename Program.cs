@@ -95,13 +95,14 @@ namespace EnterpriseAssetManagement.API
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<AppDbContext>();
+                context.Database.Migrate();
                 try
                 {
                     await DbSeeder.SeedRolesAndAdminAsync(services);
                 }
                 catch (Exception ex)
                 {
-                    // لو حصل مشكلة في السيرفر وقت القيوم بيطبعها هنا
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "I had an issue while creating the Roles in the database");
                 }
